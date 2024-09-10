@@ -1,0 +1,51 @@
+# Node.js (Backend) dependencies
+/backend/node_modules
+
+# Node.js (Backend) environment variables
+/backend/.env
+
+# React (Frontend) dependencies and build output
+/frontend/node_modules
+/frontend/build
+
+# React (Frontend) environment variables
+/frontend/.env
+
+# Compiled Arduino files
+/arduino/build
+
+# Arduino IDE specific files
+/arduino/.vscode
+/arduino/.platformio
+/arduino/.project
+/arduino/.settings
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# IDE specific files
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.suo
+*.ncb
+*.sdf
+*.suo
+*.suo
+*.tmp
+*.swp
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+
+# Environment variables
+*.env
