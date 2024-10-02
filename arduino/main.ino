@@ -4,6 +4,14 @@
 
 Adafruit_BNO055 bno = Adafruit_BNO055(55);
 
+float prevTime = 0;
+float prevVelocityX = 0;
+float prevVelocityY = 0;
+float prevVelocityZ = 0;
+float posX = 0;
+float posY = 0;
+float posZ = 0;
+
 void setup() {
   // Initialize serial communication with the Raspberry Pi
   Serial.begin(9600);
@@ -12,8 +20,9 @@ void setup() {
     Serial.print("BNO055 not detected, check your wiring or I2C address.");
     while (1);
   }
-  bno.setMode(Adafruit_BNO055::OPERATION_MODE_NDOF);
   delay(1000);
+  
+  bno.setExtCrystalUse(true);
 
   prevTime = millis(); //initial time
 }
