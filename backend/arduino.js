@@ -1,7 +1,7 @@
 const SerialPort = require('serialport');
 const Readline = require('@serialport/parser-readline');
 
-const port = new SerialPort('/dev/ttyUSB0', { baudRate: 9600 }); // Adjust based on your Arduino connection
+const port = new SerialPort('/dev/ttyUSB0', { baudRate: 9600 }); // Default set to 9600 baud rate
 const parser = port.pipe(new Readline({ delimiter: '\n' }));
 
 let coordinatesArray = [];
