@@ -5,74 +5,47 @@
 Adafruit_BNO055 bno = Adafruit_BNO055(55);
 
 float prevTime = 0;
-float prevVelocityX = 0;
-float prevVelocityY = 0;
-float prevVelocityZ = 0;
-float posX = 0;
-float posY = 0;
-float posZ = 0;
+float currentAngleZ = 0; // To store the cumulative rotation (yaw)
+float servoZ = 90;  // Starting position for the servo motor (assuming 90 is straight ahead)
 
 void setup() {
-  // Initialize serial communication with the Raspberry Pi
   Serial.begin(9600);
+  Serial.println("Initializing BNO055...");
 
-  if(!bno.begin()) {
-    Serial.print("BNO055 not detected, check your wiring or I2C address.");
+  if (!bno.begin()) {
+    Serial.println("BNO055 not detected, check wiring.");
     while (1);
   }
-  delay(1000);
   
+  delay(1000);
   bno.setExtCrystalUse(true);
-
-  prevTime = millis(); //initial time
+  prevTime = millis();
 }
 
 void loop() {
-  // Check if data is available from the Raspberry Pi
-  if (Serial.available() > 0) {
-    String command = Serial.readStringUntil('\n');
+  unsigned long currentTime = millis();
+  float deltaTime = (currentTime - prevTime) / 1000.0;  // Time difference in seconds
+  prevTime = currentTime;
+  
+  // Get gyroscope data (angular velocity in deg/s)
+  imu::Vector<3> gyro = bno.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE);
+  float gyroZ = gyro.z(); // Angular velocity around Z-axis (yaw)
 
-    // If the command is 'GET_DATA', send the sensor data
-    if (command == "GET_DATA") {
-      unsigned long currentTime = millis();
-      float deltaTime = (currentTime - prevTime) / 1000.0; // Convert ms to seconds
-      prevTime = currentTime;
+  // Integrate angular velocity to get total rotation angle
+  currentAngleZ += gyroZ * deltaTime;
 
-      // Get linear acceleration (x, y, z) from the sensor in m/s^2
-      imu::Vector<3> accel = bno.getVector(Adafruit_BNO055::VECTOR_LINEARACCEL);
-      float accelX = accel.x();
-      float accelY = accel.y();
-      float accelZ = accel.z();
+  // Translate to motor control: assuming we map the angle to the servo
+  // You can map this angle to your servo's range (0° to 180°)
+  servoZ = 90 + currentAngleZ;  // This is just an example, adjust based on your setup
 
-      // Calculate new velocity using previous velocity and acceleration
-      float velocityX = prevVelocityX + accelX * deltaTime;
-      float velocityY = prevVelocityY + accelY * deltaTime;
-      float velocityZ = prevVelocityZ + accelZ * deltaTime;
+  // Bound servoZ to servo motor limits (0° to 180°)
+  if (servoZ > 180) servoZ = 180;
+  if (servoZ < 0) servoZ = 0;
 
-      // Calculate new position using the velocity
-      posX += velocityX * deltaTime;
-      posY += velocityY * deltaTime;
-      posZ += velocityZ * deltaTime;
+  // Print out the angle for plotting/servo control
 
-      // Update previous velocities for the next iteration
-      prevVelocityX = velocityX;
-      prevVelocityY = velocityY;
-      prevVelocityZ = velocityZ;
-
-      // Send position data to the server
-      sendCoordinatesToServer(posX, posY, posZ);
-
-    }
-  }
-
-  delay(100); // Delay to avoid spamming the serial port
-}
-
-void sendCoordinatesToServer(float x, float y, float z) {
-  Serial.print(x);
-  Serial.print(",");
-  Serial.print(y);
-  Serial.print(",");
-  Serial.print(z);
-  Serial.print(",");
+  Serial.print(" deg/s, Servo Z: ");
+  Serial.println(servoZ);
+  
+  delay(100);  // Adjust based on the desired response rate
 }
